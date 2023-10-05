@@ -2,7 +2,7 @@
 
 ## overview
 
-These are my dotfiles for use on arch and ubuntu based linux distributions including:
+These are my dotfiles for use on arch and ubuntu based linux distributions. My setup includes:
 
 -   tmux
 -   neovim

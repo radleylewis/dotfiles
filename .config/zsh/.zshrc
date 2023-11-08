@@ -12,15 +12,17 @@ SAVEHIST=10000000
 HISTSIZE=11000000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
 
+# load aliasrc if it exists
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc"
+# load optionrc if it exists
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc"
+
 # load plugins
 source /usr/share/zsh/plugins/powerlevel10k/powerlevel10k.zsh-theme  2>/dev/null                                # powerlevel10k theme
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null                           # autosuggestions 
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh 2>/dev/null  # substring search
 source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null          # syntax highlighting 
 source /usr/share/zsh/plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh 2>/dev/null                                    # vi mode
-
-bindkey '^a' autosuggest-accept     # ctrl + a = accept auto-suggestion
-bindkey '^e' autosuggest-execute    # ctrl + e = accept and execute auto-suggestion
+source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh 2>/dev/null  # substring search
 
 # colours
 autoload -U colors && colors	      # colours
@@ -48,12 +50,11 @@ export LESS_TERMCAP_us=$'\E[01;36m'
 export LESS=-R
 
 zmodload zsh/terminfo
-# bindkey "$terminfo[kcuu1]" history-substring-search-up
-# bindkey "$terminfo[kcud1]" history-substring-search-down
+bindkey "$terminfo[kcuu1]" history-substring-search-up
+bindkey "$terminfo[kcud1]" history-substring-search-down
 bindkey '^[[A' history-substring-search-up
+bindkey '^[OA' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
-
-# load aliasrc if it exists
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc"
-# load optionrc if it exists
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc"
+bindkey '^[OB' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down

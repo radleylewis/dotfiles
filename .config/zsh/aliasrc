@@ -1,0 +1,29 @@
+# rad's aliases
+
+# General Aliases
+alias grep="grep --color=auto" 
+alias diff="diff --color=auto" 
+alias rm="rm -ri"
+alias mv="mv -i"
+alias vim="nvim"
+alias	ls="ls -lah --color=auto --group-directories-first" 
+alias df='df -h'  
+alias free='free -m'
+
+# Git Aliases
+alias gpush="git push"
+alias gpull="git pull --prune"
+alias gc="git commit -m"
+alias ga="git add ."
+alias gadog='PAGER="less -F -X" git adog'
+alias glog='PAGER="less -F -X" git log'
+alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+# Tmux
+alias tkill="tmux kill-session -t"
+alias tlist="tmux list-sessions"
+alias tattach="tmux attach"
+
+# dotfiles
+alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+

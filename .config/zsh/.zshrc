@@ -29,10 +29,6 @@ autoload -U colors && colors	      # colours
 autoload -U compinit && compinit    # basic completion
 autoload -U compinit colors zcalc   # theming
 
-# File and Dir colors for ls and other outputs
-export LS_OPTIONS='--color=auto'
-eval "$(dircolors -b)"
-
 # tab completion
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' # Case insensitive tab completion
 zstyle ':completion:*' list-colors "${(s.:.)--color=auto}"                        # Colored completion (different colors for dirs/files/etc)
@@ -50,11 +46,17 @@ export LESS_TERMCAP_us=$'\E[01;36m'
 export LESS=-R
 
 zmodload zsh/terminfo
-bindkey "$terminfo[kcuu1]" history-substring-search-up
-bindkey "$terminfo[kcud1]" history-substring-search-down
-bindkey '^[[A' history-substring-search-up
-bindkey '^[OA' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-bindkey '^[OB' history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
+# bindkey "$terminfo[kcuu1]" history-substring-search-up
+# bindkey "$terminfo[kcud1]" history-substring-search-down
+# bindkey '^[[A' history-substring-search-up
+# bindkey '^[OA' history-substring-search-up
+# bindkey '^[[B' history-substring-search-down
+# bindkey '^[OB' history-substring-search-down
+bindkey -M vicmd '^[[A' history-substring-search-up \
+                 '^[OA' history-substring-search-up \
+                 '^[[B' history-substring-search-down \
+                 '^[OB' history-substring-search-down
+bindkey -M viins '^[[A' history-substring-search-up \
+                 '^[OA' history-substring-search-up \
+                 '^[[B' history-substring-search-down \
+                 '^[OB' history-substring-search-down

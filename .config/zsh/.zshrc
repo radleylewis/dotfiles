@@ -5,24 +5,30 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# To customize prompt, run `p10k configure` or edit ~/.config//zsh//.p10k.zsh.
-[[ ! -f ~/.config//zsh//.p10k.zsh ]] || source ~/.config//zsh//.p10k.zsh
+[ -f "${ZDOTDIR}/aliasrc" ] && source "${ZDOTDIR}/aliasrc"
+[ -f "${ZDOTDIR}/optionrc" ] && source "${ZDOTDIR}/optionrc"
+[ -f "${ZDOTDIR}/pluginrc" ] && source "${ZDOTDIR}/pluginrc"
 
-SAVEHIST=10000000
-HISTSIZE=11000000
-HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
+# history
+HISTSIZE=110000
+SAVEHIST=100000
+HISTFILE=~/.histfile
 
-# load aliasrc if it exists
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliasrc"
-# load optionrc if it exists
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/optionrc"
-
-# load plugins
-source /usr/share/zsh/plugins/powerlevel10k/powerlevel10k.zsh-theme  2>/dev/null                                # powerlevel10k theme
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null                           # autosuggestions 
-source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null          # syntax highlighting 
-source /usr/share/zsh/plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh 2>/dev/null                                    # vi mode
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh 2>/dev/null  # substring search
+zmodload zsh/terminfo
+bindkey "$terminfo[kcuu1]" history-substring-search-up
+bindkey "$terminfo[kcud1]" history-substring-search-down
+bindkey '^[[A' history-substring-search-up
+bindkey '^[OA' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey '^[OB' history-substring-search-down
+bindkey -M vicmd '^[[A' history-substring-search-up 
+bindkey -M vicmd '^[OA' history-substring-search-up 
+bindkey -M vicmd '^[[B' history-substring-search-down
+bindkey -M vicmd '^[OB' history-substring-search-down
+bindkey -M viins '^[[A' history-substring-search-up 
+bindkey -M viins '^[OA' history-substring-search-up 
+bindkey -M viins '^[[B' history-substring-search-down 
+bindkey -M viins '^[OB' history-substring-search-down
 
 # colours
 autoload -U colors && colors	      # colours
@@ -45,18 +51,16 @@ export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;36m'
 export LESS=-R
 
-zmodload zsh/terminfo
-# bindkey "$terminfo[kcuu1]" history-substring-search-up
-# bindkey "$terminfo[kcud1]" history-substring-search-down
-# bindkey '^[[A' history-substring-search-up
-# bindkey '^[OA' history-substring-search-up
-# bindkey '^[[B' history-substring-search-down
-# bindkey '^[OB' history-substring-search-down
-bindkey -M vicmd '^[[A' history-substring-search-up \
-                 '^[OA' history-substring-search-up \
-                 '^[[B' history-substring-search-down \
-                 '^[OB' history-substring-search-down
-bindkey -M viins '^[[A' history-substring-search-up \
-                 '^[OA' history-substring-search-up \
-                 '^[[B' history-substring-search-down \
-                 '^[OB' history-substring-search-down
+# completion
+zstyle :compinstall ~/.config/zsh/.zshrc
+
+autoload -Uz compinit
+compinit
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
+# To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
+[[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh

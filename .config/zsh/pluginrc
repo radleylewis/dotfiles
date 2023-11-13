@@ -1,0 +1,27 @@
+() {
+  local ZPLUGINDIR=/etc/zsh/plugins
+
+  apply() {
+    github=$1
+    plugin=$2
+    
+    if [ ! -d "${ZPLUGINDIR}/${plugin}" ]; then
+      echo "WARNING: ${plugin} not found. Installing..."
+      git clone "https://www.github.com/${github}/${plugin}" "${ZPLUGINDIR}/${plugin}"
+      echo "SUCCESS: ${plugin} installed!"
+    fi
+    
+    if [ "${plugin}" = "powerlevel10k" ]; then
+      source "${ZPLUGINDIR}/${plugin}/${plugin}.zsh-theme"
+    else
+      source "${ZPLUGINDIR}/${plugin}/${plugin}.plugin.zsh"
+    fi
+  }
+
+  apply zdharma-continuum fast-syntax-highlighting
+  apply zsh-users zsh-history-substring-search
+  apply zsh-users zsh-autosuggestions
+  apply jeffreytse zsh-vi-mode
+  apply romkatv powerlevel10k 
+}
+

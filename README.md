@@ -7,6 +7,7 @@ These are my dotfiles for use on arch and ubuntu based linux distributions. My s
 -   tmux
 -   neovim
 -   alacritty
+-   zsh
 
 Feel free to use any of the configurations herein as inspiration.
 

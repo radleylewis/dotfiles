@@ -17,6 +17,8 @@ Feel free to use any of the configurations herein as inspiration.
 
 ```bash
 cd ~
+
+```bash
 git clone --bare https://github.com/radleylewis/dotfiles.git .dotfiles
 ```
 
@@ -24,10 +26,20 @@ git clone --bare https://github.com/radleylewis/dotfiles.git .dotfiles
 
 ```bash
 echo alias dotfiles=\'git --git-dir='$HOME'/.dotfiles --work-tree='$HOME'\' >> .bashrc
+```
+```bash
 source ~/.bashrc
+```
+```bash
 dotfiles config status.showUntrackedFiles no # don't track files noting $HOME work-tree
+```
+```bash
 dotfiles checkout # populates dotfiles to their respective locations
+```
+```bash
 cd ~/.config/nvim
+```
+```bash
 dotfiles submodule update # clones the submodule nvim which may not happen automatically
 ```
 

@@ -17,7 +17,7 @@ Feel free to use any of the configurations herein as inspiration.
 
 ```bash
 cd ~
-
+```
 ```bash
 git clone --bare https://github.com/radleylewis/dotfiles.git .dotfiles
 ```

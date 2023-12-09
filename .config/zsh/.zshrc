@@ -13,6 +13,12 @@ fi
 HISTSIZE=110000
 SAVEHIST=100000
 HISTFILE=~/.histfile
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+export VISUAL=/usr/bin/nvim
+export EDITOR=/usr/bin/nvim
 
 zmodload zsh/terminfo
 bindkey "$terminfo[kcuu1]" history-substring-search-up
@@ -56,7 +62,6 @@ zstyle :compinstall ~/.config/zsh/.zshrc
 
 autoload -Uz compinit
 compinit
-
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm

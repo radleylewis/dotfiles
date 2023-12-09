@@ -7,7 +7,7 @@
     
     if [ ! -d "${ZPLUGINDIR}/${plugin}" ]; then
       echo "WARNING: ${plugin} not found. Installing..."
-      git clone "https://www.github.com/${github}/${plugin}" "${ZPLUGINDIR}/${plugin}"
+      sudo git clone "https://www.github.com/${github}/${plugin}" "${ZPLUGINDIR}/${plugin}"
       echo "SUCCESS: ${plugin} installed!"
     fi
     

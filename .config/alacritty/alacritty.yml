@@ -1,9 +1,26 @@
 window:
-  # opacity: 0.7
-  decorations: none
+  opacity: 1
+  # decorations: none
 
 env:
   TERM: xterm-256color
+
+font:
+  normal:
+    family: FiraCode Nerd Font
+    style: Regular
+
+  bold:
+    family: FiraCode Nerd Font
+    style: Bold
+
+  italic:
+    family: FiraCode Nerd Font
+    style: Light
+
+  bold_italic:
+    family: FiraCode Nerd Font
+    style: SemiBold
 
 # catppuccin colourscheme
 colors:

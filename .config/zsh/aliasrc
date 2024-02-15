@@ -9,6 +9,7 @@ alias vim="nvim"
 alias	ls="ls -lah --color=auto --group-directories-first" 
 alias df='df -h'  
 alias free='free -m'
+alias kchrome="ps -e | rg chrom | awk '{print $1}' | xargs kill -9"
 
 # Git Aliases
 alias gpush="git push"

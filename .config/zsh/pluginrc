@@ -1,27 +1,13 @@
 () {
-	local ZPLUGINDIR=$XDG_CONFIG_HOME/zsh/plugins
-
-	echo "It doesn't appear that you have your zsh plugins installed."
-	echo -n "Would you like to install them [Y/n]? " 
-	read response
-
-	case "$response" in
-	[Yy]* | "" )
-	echo "Installing zsh plugins..."
-	;;
-	* )
-	echo "OK, not installing for now..."
-	return
-	;;
-	esac
+	local ZPLUGINDIR=$ZDOTDIR/plugins
 
 	apply() {
-	  mkdir -p $ZPLUGINDIR
 	  local github="$1"
 	  local plugin="$2"
 	  local plugin_path="${ZPLUGINDIR}/${plugin}"
 
 	  if [ ! -d "$plugin_path" ]; then
+	    mkdir -p $ZPLUGINDIR
 	    echo "WARNING: $plugin not found. Installing..."
 	    if git clone "https://www.github.com/${github}/${plugin}" "$plugin_path"; then
 	      echo "SUCCESS: $plugin installed!"

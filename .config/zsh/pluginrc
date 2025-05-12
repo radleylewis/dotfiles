@@ -1,27 +1,48 @@
 () {
-  local ZPLUGINDIR=/etc/zsh/plugins
+	local ZPLUGINDIR=$XDG_CONFIG_HOME/zsh/plugins
 
-  apply() {
-    github=$1
-    plugin=$2
-    
-    if [ ! -d "${ZPLUGINDIR}/${plugin}" ]; then
-      echo "WARNING: ${plugin} not found. Installing..."
-      sudo git clone "https://www.github.com/${github}/${plugin}" "${ZPLUGINDIR}/${plugin}"
-      echo "SUCCESS: ${plugin} installed!"
-    fi
-    
-    if [ "${plugin}" = "powerlevel10k" ]; then
-      source "${ZPLUGINDIR}/${plugin}/${plugin}.zsh-theme"
-    else
-      source "${ZPLUGINDIR}/${plugin}/${plugin}.plugin.zsh"
-    fi
-  }
+	echo "It doesn't appear that you have your zsh plugins installed."
+	echo -n "Would you like to install them [Y/n]? " 
+	read response
 
-  apply zdharma-continuum fast-syntax-highlighting
-  apply zsh-users zsh-history-substring-search
-  apply zsh-users zsh-autosuggestions
-  apply jeffreytse zsh-vi-mode
-  apply romkatv powerlevel10k 
+	case "$response" in
+	[Yy]* | "" )
+	echo "Installing zsh plugins..."
+	;;
+	* )
+	echo "OK, not installing for now..."
+	return
+	;;
+	esac
+
+	apply() {
+	  mkdir -p $ZPLUGINDIR
+	  local github="$1"
+	  local plugin="$2"
+	  local plugin_path="${ZPLUGINDIR}/${plugin}"
+
+	  if [ ! -d "$plugin_path" ]; then
+	    echo "WARNING: $plugin not found. Installing..."
+	    if git clone "https://www.github.com/${github}/${plugin}" "$plugin_path"; then
+	      echo "SUCCESS: $plugin installed!"
+	    else
+	      echo "ERROR: Failed to install $plugin"
+	      return 1
+	    fi
+	  fi
+
+	  if [ "$plugin" = "powerlevel10k" ]; then
+	    source "$plugin_path/${plugin}.zsh-theme"
+	  else
+	    source "$plugin_path/${plugin}.plugin.zsh"
+	  fi
+	}
+
+	apply zdharma-continuum fast-syntax-highlighting
+	apply zsh-users zsh-history-substring-search
+	apply zsh-users zsh-autosuggestions
+	apply jeffreytse zsh-vi-mode
+	apply agkozak zsh-z  
+	apply romkatv powerlevel10k
 }
 

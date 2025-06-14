@@ -4,12 +4,13 @@
 
 These are my dotfiles for use on arch and ubuntu based linux distributions. My setup includes:
 
--   qtile
+-   qtile ([submodule](https://github.com/radleylewis/qtile))  
+-   neovim ([submodule](https://github.com/radleylewis/nvim))  
 -   tmux
 -   neovim
 -   alacritty
 -   zsh
--   rofi (wayland)
+-   rofi 
 
 Feel free to use any of the configurations herein as inspiration.
 

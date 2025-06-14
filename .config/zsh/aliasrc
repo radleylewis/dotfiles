@@ -28,4 +28,3 @@ alias tattach="tmux attach"
 # Power
 alias battery-check-0="upower -i $(upower -e | grep BAT0)"
 alias battery-check-1="upower -i $(upower -e | grep BAT1)"
-

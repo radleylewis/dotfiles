@@ -4,3 +4,6 @@
 [submodule ".config/alacritty/themes"]
 	path = .config/alacritty/themes
 	url = https://github.com/alacritty/alacritty-theme.git
+[submodule ".config/qtile"]
+	path = .config/qtile
+	url = git@github.com:radleylewis/qtile.git

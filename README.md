@@ -4,10 +4,12 @@
 
 These are my dotfiles for use on arch and ubuntu based linux distributions. My setup includes:
 
+-   qtile
 -   tmux
 -   neovim
 -   alacritty
 -   zsh
+-   rofi (wayland)
 
 Feel free to use any of the configurations herein as inspiration.
 
@@ -19,7 +21,7 @@ Feel free to use any of the configurations herein as inspiration.
 cd ~
 ```
 ```bash
-git clone --bare https://github.com/radleylewis/dotfiles.git .dotfiles
+git clone --bare git@github.com:radleylewis/dotfiles.git .dotfiles
 ```
 
 2. include dotfiles alias in .bashrc / .zshrc

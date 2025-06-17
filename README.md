@@ -7,7 +7,6 @@ These are my dotfiles for use on arch and ubuntu based linux distributions. My s
 -   qtile ([submodule](https://github.com/radleylewis/qtile))  
 -   neovim ([submodule](https://github.com/radleylewis/nvim))  
 -   tmux
--   neovim
 -   alacritty
 -   zsh
 -   rofi 

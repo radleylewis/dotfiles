@@ -19,7 +19,7 @@ style = "Regular"
 
 [window]
 decorations = "full"
-opacity = 0.8
+opacity = 1
 
 [general]
-import = ["~/.config/alacritty/themes/themes/carbonfox.toml"]
+import = ["~/.config/alacritty/themes/themes/autumn.toml"]

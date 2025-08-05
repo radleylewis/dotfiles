@@ -82,7 +82,6 @@ export NVM_DIR="$HOME/.nvm"
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
 [[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh
 
-=======
 # pnpm
 export PNPM_HOME="/Users/rad/.local/share/pnpm"
 case ":$PATH:" in

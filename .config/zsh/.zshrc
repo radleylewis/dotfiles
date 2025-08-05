@@ -20,8 +20,15 @@ export XDG_CACHE_HOME="$HOME/.cache"
 
 export BROWSER=brave
 
-export VISUAL=/usr/bin/nvim
-export EDITOR=/usr/bin/nvim
+if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS
+    export VISUAL=/opt/homebrew/bin/nvim
+    export EDITOR=/opt/homebrew/bin/nvim
+elif [[ "$(uname)" == "Linux" ]]; then
+    # Linux
+    export VISUAL=/usr/local/bin/nvim
+    export EDITOR=/usr/local/bin/nvim
+fi
 
 zmodload zsh/terminfo
 bindkey "$terminfo[kcuu1]" history-substring-search-up
@@ -66,12 +73,20 @@ zstyle :compinstall ~/.config/zsh/.zshrc
 autoload -Uz compinit
 compinit
 
+export GPG_TTY=$(tty)
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
-export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
-
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
 [[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh
 
+=======
+# pnpm
+export PNPM_HOME="/Users/rad/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end

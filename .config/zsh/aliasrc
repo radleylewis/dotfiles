@@ -1,13 +1,13 @@
 # rad's aliases
 
 # General Aliases
-alias grep="grep --color=auto" 
-alias diff="diff --color=auto" 
+alias grep="grep --color=auto"
+alias diff="diff --color=auto"
 alias rm="rm -ri"
 alias mv="mv -i"
 alias vim="nvim"
-alias	ls="ls -lah --color=auto --group-directories-first" 
-alias df='df -h'  
+alias	ls="ls -lah --color=auto"
+alias df='df -h'
 alias free='free -m'
 alias kchrome="ps -e | rg chrom | awk '{print $1}' | xargs kill -9"
 
@@ -25,6 +25,9 @@ alias tkill="tmux kill-session -t"
 alias tlist="tmux list-sessions"
 alias tattach="tmux attach"
 
-# Power
-alias battery-check-0="upower -i $(upower -e | grep BAT0)"
-alias battery-check-1="upower -i $(upower -e | grep BAT1)"
+# dotfiles
+alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+# AWS
+alias stop:lightsail="aws lightsail stop-instance --region ap-northeast-1 --instance-name dcconnect_rad"
+alias start:lightsail="aws lightsail start-instance --region ap-northeast-1 --instance-name dcconnect_rad"

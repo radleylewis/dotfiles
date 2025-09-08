@@ -9,7 +9,9 @@ These are my dotfiles for use on arch and ubuntu based linux distributions. My s
 -   tmux
 -   alacritty
 -   zsh
--   rofi 
+-   rofi
+-   lf
+-   brave
 
 Feel free to use any of the configurations herein as inspiration.
 

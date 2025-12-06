@@ -28,7 +28,7 @@
 	apply zsh-users zsh-history-substring-search
 	apply zsh-users zsh-autosuggestions
 	apply jeffreytse zsh-vi-mode
-	apply agkozak zsh-z  
+	apply agkozak zsh-z
 	apply romkatv powerlevel10k
 }
 

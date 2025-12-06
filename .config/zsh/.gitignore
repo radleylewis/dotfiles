@@ -1,3 +1,7 @@
 .zcompdump
 plugins/
 .zcompdump
+.zsh_sessions
+.zsh_history
+.zcompcache
+

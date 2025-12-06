@@ -1,0 +1,21 @@
+profile laptop-only {
+    output eDP-1 {
+        enable
+        mode 2560x1440@120Hz
+        scale 1.5
+        position 0,0
+    }
+}
+
+profile docked-external-only {
+    output DP-2 {
+        enable
+        mode 2560x1440@144Hz
+        scale 1.0
+        position 0,0
+    }
+
+    output eDP-1 {
+        disable
+    }
+}

@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+from typing import List
+
+mic_icon = "󰍬"
+yes_icon = ""
+no_icon = ""
+
+CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+
+
+def _run_cmd(cmd: List[str]) -> str:
+    return subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
+
+
+def _notify(title: str, msg: str):
+    subprocess.run(["notify-send", title, msg])
+
+
+def _get_sources() -> List[str]:
+    """Return all input devices (sources) with their human-readable names."""
+    output = _run_cmd(["pactl", "list", "sources"])
+
+    sources = []
+    current = []
+    for line in output.splitlines():
+        if line.startswith("Source #"):
+            if current:
+                sources.append(current)
+            current = []
+        current.append(line.strip())
+    if current:
+        sources.append(current)
+
+    result = []
+    for s in sources:
+        name = ""
+        desc = ""
+        for line in s:
+            if "Name:" in line:
+                name = line.split("Name:")[1].strip()
+            if "Description:" in line:
+                desc = line.split("Description:")[1].strip()
+        if name:
+            result.append((name, desc))
+
+    return result
+
+
+def _get_default_source() -> str:
+    """Return the current default mic."""
+    return _run_cmd(["pactl", "get-default-source"])
+
+
+def mic_menu() -> str:
+    sources = _get_sources()
+    default = _get_default_source()
+
+    options: List[str] = []
+    mapping = {}
+
+    for name, desc in sources:
+        label = f"{mic_icon} {desc}"
+        if name == default:
+            label += "  (current)"
+        options.append(label)
+        mapping[label] = name
+
+    menu_input = "\n".join(options)
+
+    result = subprocess.run(
+        [
+            "rofi",
+            "-dmenu",
+            "-p",
+            "Select Microphone",
+            "-mesg",
+            f"Current: {default}",
+        ],
+        input=menu_input,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    return mapping.get(result, "")
+
+
+def main():
+    selected_source = mic_menu()
+
+    if selected_source:
+        subprocess.run(["pactl", "set-default-source", selected_source])
+        _notify("Microphone Changed", f"Now using:\n{selected_source}")
+
+
+if __name__ == "__main__":
+    main()

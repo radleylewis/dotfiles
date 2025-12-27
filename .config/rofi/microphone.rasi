@@ -1,0 +1,4 @@
+configuration {
+  show-icons: true;
+}
+

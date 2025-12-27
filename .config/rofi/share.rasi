@@ -4,15 +4,13 @@
   padding: 0;
   spacing: 0;
 
-  urgent: #f6719b;
-  active: #51d3d3;
-  bg: #1a1b26;
-  bg-alt: #232433;
-  fg: #6a6f87;
-  fg-alt: #a9b1d6;
-  selected: @fg;
-
-
+  urgent: #ffa07a;
+  active: #ff6b8a;
+  bg: #1a1426;
+  bg-alt: #2d2438;
+  fg: #9d8ba8;
+  fg-alt: #e8b4c8;
+  selected: @fg-alt;
   background-color: @bg;
   text-color: @fg;
 }
@@ -32,14 +30,36 @@ configuration {
     display-name: "";
   }
 
+  wifi {
+    display-name: "󰖩";
+  }
+
+  microphone {
+    display-name: "󰍬";
+  }
+
   timeout {
     delay: 10;
     action: "kb-cancel";
   }
 
+  filebrowser {
+    display-name: "📂";
+  }
+
   display-drun: "Application:";
   display-window: "Window:";
-  modi: [drun,window];
+  display-filebrowser: "Files:";
+  case-sensitive: false;
+  sort: true;
+  sorting-method: "fzf";
+  modi: [
+    "drun",
+    "window",
+    "filebrowser",
+    "profile:~/.config/rofi/scripts/performance-profile-menu",
+    "microphone:~/.config/rofi/scripts/microphone-menu"
+  ];
   show-icons: true;
   terminal: "alacritty";
 }

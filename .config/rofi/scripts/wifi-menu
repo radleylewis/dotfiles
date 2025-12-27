@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+import subprocess
+import os
+import sys
+
+search = ""
+shut_lock = ""
+open_lock = ""
+wifi_enable = "󰖩"
+wifi_disable = "󰖪"
+
+config_dir = os.environ.get("XDG_CONFIG_HOME", "~/.config") + "/rofi"
+
+
+def get_wifi_list():
+    """Get list of available WiFi networks with security icons"""
+    result = subprocess.run(
+        ["nmcli", "--fields", "SECURITY,SSID", "device", "wifi", "list"],
+        capture_output=True,
+        text=True,
+    )
+
+    networks = []
+    for line in result.stdout.splitlines()[1:]:  # Skip header
+        line = line.strip()
+        if not line or line == "--":
+            continue
+
+        # Parse security and SSID
+        parts = line.split(maxsplit=1)
+        if len(parts) == 2:
+            security, ssid = parts
+            if security.startswith("WPA") or security == "WPA2" or security == "WPA3":
+                icon = shut_lock
+            elif security == "--":
+                icon = open_lock
+            else:
+                icon = shut_lock
+            networks.append(f"{icon} {ssid}")
+        elif len(parts) == 1:
+            # Open network with just SSID
+            networks.append(f"{open_lock} {parts[0]}")
+
+    return networks
+
+
+def is_wifi_enabled():
+    """Check if WiFi is enabled"""
+    result = subprocess.run(
+        ["nmcli", "-fields", "WIFI", "g"],
+        capture_output=True,
+        text=True,
+    )
+    return "enabled" in result.stdout
+
+
+def get_saved_connections():
+    """Get list of saved connection names"""
+    result = subprocess.run(
+        ["nmcli", "-g", "NAME", "connection"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip().split("\n")
+
+
+def wifi_menu():
+    """Display WiFi menu"""
+    # Send notification
+    subprocess.run(
+        ["notify-send", "Getting list of available Wi-Fi networks..."],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    # Get WiFi status and networks
+    wifi_enabled = is_wifi_enabled()
+
+    if wifi_enabled:
+        toggle = f"{wifi_disable}  Disable Wi-Fi"
+        wifi_list = get_wifi_list()
+    else:
+        toggle = f"{wifi_enable}  Enable Wi-Fi"
+        wifi_list = []
+
+    # Build menu
+    print("\0prompt\x1fWi-Fi SSID")
+    print(f"{toggle}{chr(0)}info\x1ftoggle")
+
+    for network in wifi_list:
+        # Extract SSID (remove icon)
+        print(f"{network}{chr(0)}info\x1f{network}")
+
+
+def handle_selection(selection_info, selection_text):
+    """Handle the selected menu item"""
+    if selection_info == "toggle":
+        # Toggle WiFi
+        if wifi_disable in selection_text:
+            subprocess.run(["nmcli", "radio", "wifi", "off"])
+        else:
+            subprocess.run(["nmcli", "radio", "wifi", "on"])
+    else:
+        # Connect to network
+        # Extract SSID (remove icon)
+        chosen_id = (
+            selection_text.split(maxsplit=1)[1]
+            if " " in selection_text
+            else selection_text
+        )
+
+        success_message = f'You are now connected to the Wi-Fi network "{chosen_id}".'
+        saved_connections = get_saved_connections()
+
+        if chosen_id in saved_connections:
+            # Connect to saved network
+            result = subprocess.run(
+                ["nmcli", "connection", "up", "id", chosen_id],
+                capture_output=True,
+                text=True,
+            )
+            if "successfully" in result.stdout or "successfully" in result.stderr:
+                subprocess.run(
+                    ["notify-send", "Connection Established", success_message],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+        else:
+            # New network - may need password
+            if shut_lock in selection_text:
+                # Secured network - prompt for password
+                result = subprocess.run(
+                    ["rofi", "-dmenu", "-p", "Password: ", "-password"],
+                    capture_output=True,
+                    text=True,
+                )
+                wifi_password = result.stdout.strip()
+
+                if not wifi_password:
+                    sys.exit(0)
+
+                result = subprocess.run(
+                    [
+                        "nmcli",
+                        "device",
+                        "wifi",
+                        "connect",
+                        chosen_id,
+                        "password",
+                        wifi_password,
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+            else:
+                # Open network
+                result = subprocess.run(
+                    ["nmcli", "device", "wifi", "connect", chosen_id],
+                    capture_output=True,
+                    text=True,
+                )
+
+            if "successfully" in result.stdout or "successfully" in result.stderr:
+                subprocess.run(
+                    ["notify-send", "Connection Established", success_message],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+
+if __name__ == "__main__":
+    if selection_info := os.environ.get("ROFI_INFO"):
+        # User made a selection - get the selected text from stdin
+
+        selection_text = sys.stdin.read().strip()
+        handle_selection(selection_info, selection_text)
+    else:
+        # Show menu
+        wifi_menu()

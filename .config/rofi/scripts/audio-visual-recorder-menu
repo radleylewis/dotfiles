@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+
+from utils import (
+    timestamp_file,
+    get_audio_input_device,
+    notify,
+    take_screenshot,
+)
+import subprocess
+import os
+from typing import List
+
+ICONS = {
+    "mic": "󰍹 󰍬",
+    "system": "󰍹 󰕾",
+    "silent": "󰍹 󰖁",
+    "audio": "󰍬",
+    "stop": "󰓛",
+    "screenshot": "󰄀",
+}
+
+VIDEO_DIR = os.path.expanduser("~/Videos")
+CONFIG_DIR = os.path.expanduser("~/.config/rofi")
+
+
+def get_cmd_for(process_name: str) -> str | None:
+    try:
+        pid = subprocess.check_output(["pgrep", "-f", process_name]).decode().strip()
+        return subprocess.check_output(["ps", "-p", pid, "-o", "cmd="]).decode().strip()
+    except Exception:
+        return None
+
+
+def get_recording_info():
+    wf = get_cmd_for("wf-recorder")
+    mic_name = get_audio_input_device()
+
+    if wf:
+        if "--audio=default" in wf:
+            audio = f"microphone ({mic_name})"
+        elif "--audio" in wf:
+            audio = "system audio"
+        else:
+            audio = "silent"
+
+        parts = wf.split()
+        outfile = parts[parts.index("-f") + 1] if "-f" in parts else "unknown"
+
+        return ("screen", audio, outfile)
+
+    ff = get_cmd_for("ffmpeg")
+    if ff:
+        rec_type = "audio-only"
+
+        audio = f"microphone ({mic_name})"
+        outfile = ff.split()[-1]
+        return (rec_type, audio, outfile)
+
+    return None
+
+
+def menu(options: List[str], message: str) -> str:
+    result = subprocess.run(
+        [
+            "rofi",
+            "-dmenu",
+            "-p",
+            "Recorder",
+            "-mesg",
+            message,
+            "-theme",
+            f"{CONFIG_DIR}/common.rasi",
+        ],
+        input="\n".join(options),
+        text=True,
+        capture_output=True,
+    )
+    return result.stdout.strip()
+
+
+def start_screen_mic():
+    mic = get_audio_input_device()
+    out = timestamp_file("recording", "mp4", VIDEO_DIR)
+    subprocess.Popen(["wf-recorder", "--audio=default", "-f", out])
+    notify("Recording Started", f"Screen + microphone ({mic})\n{out}")
+
+
+def start_screen_system_audio():
+    out = timestamp_file("recording", "mp4", VIDEO_DIR)
+    subprocess.Popen(["wf-recorder", "--audio", "-f", out])
+    notify("Recording Started", f"Screen + system audio\n{out}")
+
+
+def start_screen_silent():
+    out = timestamp_file("recording", "mp4", VIDEO_DIR)
+    subprocess.Popen(["wf-recorder", "-f", out])
+    notify("Recording Started", f"Screen only\n{out}")
+
+
+def start_audio_only():
+    mic = get_audio_input_device()
+    out = timestamp_file("audio", "mp3", VIDEO_DIR)
+    subprocess.Popen(["ffmpeg", "-f", "pulse", "-i", "default", "-c:a", "mp3", out])
+    notify("Audio Recording", f"Mic: {mic}\n{out}")
+
+
+def stop_recording():
+    subprocess.run(["pkill", "-f", "wf-recorder"])
+    subprocess.run(["pkill", "-f", "ffmpeg"])
+    notify("Recording Stopped", "Saved to Videos")
+
+
+def main():
+    info = get_recording_info()
+
+    if info:
+        rec_type, audio, outfile = info
+        msg = (
+            f"<b>Active recording</b>\n"
+            f"Type: {rec_type}\n"
+            f"Audio: {audio}\n"
+            f"File: {outfile}"
+        )
+        selected = menu([ICONS["stop"]], msg)
+        if selected == ICONS["stop"]:
+            stop_recording()
+        return
+
+    options = [
+        ICONS["mic"],  # screen + mic
+        ICONS["system"],  # screen + system audio
+        ICONS["silent"],  # screen only
+        ICONS["screenshot"],  # screenshot (NEW)
+        ICONS["audio"],  # audio only
+    ]
+
+    mic_name = get_audio_input_device()
+    selected = menu(options, f"Choose mode\nMic detected: {mic_name}")
+
+    if selected == ICONS["mic"]:
+        start_screen_mic()
+    elif selected == ICONS["system"]:
+        start_screen_system_audio()
+    elif selected == ICONS["silent"]:
+        start_screen_silent()
+    elif selected == ICONS["screenshot"]:
+        take_screenshot()
+    elif selected == ICONS["audio"]:
+        start_audio_only()
+
+
+if __name__ == "__main__":
+    main()

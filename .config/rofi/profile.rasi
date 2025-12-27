@@ -1,0 +1,6 @@
+@import "common"
+
+listview {
+    columns:      3;
+    lines:        1;
+}

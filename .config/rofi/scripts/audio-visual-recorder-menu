@@ -8,27 +8,38 @@ from utils import (
 )
 import subprocess
 import os
-from typing import List
+from typing import Tuple
+from enum import Enum
 
-ICONS = {
-    "mic": "󰍹 󰍬",
-    "system": "󰍹 󰕾",
-    "silent": "󰍹 󰖁",
-    "audio": "󰍬",
-    "stop": "󰓛",
-    "screenshot": "󰄀",
-}
+
+class RecordingOption(Enum):
+    SCREEN_AND_MIC = "󰍹 󰍬"
+    SCREEN_AND_SYS = "󰍹 󰕾"
+    SCREEN_ONLY = "󰍹 󰖁"
+    AUDIO_ONLY = "󰍬"
+    SCREENSHOT = "󰄀"
+
+
+STOP_RECORDING = "󰓛"
+
 
 VIDEO_DIR = os.path.expanduser("~/Videos")
 CONFIG_DIR = os.path.expanduser("~/.config/rofi")
 
 
-def get_cmd_for(process_name: str) -> str | None:
-    try:
-        pid = subprocess.check_output(["pgrep", "-f", process_name]).decode().strip()
-        return subprocess.check_output(["ps", "-p", pid, "-o", "cmd="]).decode().strip()
-    except Exception:
+def get_cmd_for(process_name):
+    result = subprocess.run(
+        ["pgrep", "-f", process_name], capture_output=True, text=True
+    )
+
+    if result.returncode != 0:
         return None
+
+    pid = result.stdout.strip().split("\n")[0]
+    cmd = ["ps", "-p", pid, "-o", "args", "--no-headers"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+
+    return res.stdout.strip() if res.returncode == 0 else None
 
 
 def get_recording_info():
@@ -56,52 +67,51 @@ def get_recording_info():
         outfile = ff.split()[-1]
         return (rec_type, audio, outfile)
 
-    return None
-
-
-def menu(options: List[str], message: str) -> str:
-    result = subprocess.run(
-        [
-            "rofi",
-            "-dmenu",
-            "-p",
-            "Recorder",
-            "-mesg",
-            message,
-            "-theme",
-            f"{CONFIG_DIR}/common.rasi",
-        ],
-        input="\n".join(options),
-        text=True,
-        capture_output=True,
-    )
-    return result.stdout.strip()
-
 
 def start_screen_mic():
     mic = get_audio_input_device()
     out = timestamp_file("recording", "mp4", VIDEO_DIR)
-    subprocess.Popen(["wf-recorder", "--audio=default", "-f", out])
+    subprocess.Popen(
+        ["wf-recorder", "--audio=default", "-f", out],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
     notify("Recording Started", f"Screen + microphone ({mic})\n{out}")
 
 
 def start_screen_system_audio():
     out = timestamp_file("recording", "mp4", VIDEO_DIR)
-    subprocess.Popen(["wf-recorder", "--audio", "-f", out])
+    subprocess.Popen(
+        ["wf-recorder", "--audio", "-f", out],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
     notify("Recording Started", f"Screen + system audio\n{out}")
-
-
-def start_screen_silent():
-    out = timestamp_file("recording", "mp4", VIDEO_DIR)
-    subprocess.Popen(["wf-recorder", "-f", out])
-    notify("Recording Started", f"Screen only\n{out}")
 
 
 def start_audio_only():
     mic = get_audio_input_device()
     out = timestamp_file("audio", "mp3", VIDEO_DIR)
-    subprocess.Popen(["ffmpeg", "-f", "pulse", "-i", "default", "-c:a", "mp3", out])
+    subprocess.Popen(
+        ["ffmpeg", "-f", "pulse", "-i", "default", "-c:a", "mp3", out],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
     notify("Audio Recording", f"Mic: {mic}\n{out}")
+
+
+def start_screen_silent():
+    out = timestamp_file("recording", "mp4", VIDEO_DIR)
+    subprocess.Popen(
+        ["wf-recorder", "-f", out],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    notify("Recording Started", f"Screen only\n{out}")
 
 
 def stop_recording():
@@ -110,44 +120,45 @@ def stop_recording():
     notify("Recording Stopped", "Saved to Videos")
 
 
-def main():
-    info = get_recording_info()
+def prompt_stop_recording(ongoing_info: Tuple[str, str, str]):
+    rec_type, audio, outfile = ongoing_info
+    msg = "<b>Active recording</b>"
+    msg += f" | Type: {rec_type}"
+    msg += f" | Audio: {audio}"
+    msg += f" | File: {outfile}"
+    print(f"\0message\x1f{msg}")
+    print(f"{STOP_RECORDING}{chr(0)}info\x1f{STOP_RECORDING}")
 
-    if info:
-        rec_type, audio, outfile = info
-        msg = (
-            f"<b>Active recording</b>\n"
-            f"Type: {rec_type}\n"
-            f"Audio: {audio}\n"
-            f"File: {outfile}"
-        )
-        selected = menu([ICONS["stop"]], msg)
-        if selected == ICONS["stop"]:
-            stop_recording()
-        return
 
-    options = [
-        ICONS["mic"],  # screen + mic
-        ICONS["system"],  # screen + system audio
-        ICONS["silent"],  # screen only
-        ICONS["screenshot"],  # screenshot (NEW)
-        ICONS["audio"],  # audio only
-    ]
-
-    mic_name = get_audio_input_device()
-    selected = menu(options, f"Choose mode\nMic detected: {mic_name}")
-
-    if selected == ICONS["mic"]:
-        start_screen_mic()
-    elif selected == ICONS["system"]:
-        start_screen_system_audio()
-    elif selected == ICONS["silent"]:
-        start_screen_silent()
-    elif selected == ICONS["screenshot"]:
-        take_screenshot()
-    elif selected == ICONS["audio"]:
-        start_audio_only()
+def show_recording_options() -> None:
+    print("\0message\x1fStart Recording")
+    for option in RecordingOption:
+        print(f"{option.value}{chr(0)}info\x1f{option.value}")
 
 
 if __name__ == "__main__":
-    main()
+    retv = int(os.environ.get("ROFI_RETV", 0))
+
+    if retv == 0:
+        # Initial Call, show options!
+        if current_recording := get_recording_info():
+            prompt_stop_recording(current_recording)
+        else:
+            show_recording_options()
+
+    elif retv == 1:
+        selection = os.environ.get("ROFI_INFO")
+        if selection == STOP_RECORDING:
+            stop_recording()
+        elif selection == RecordingOption.SCREEN_AND_MIC.value:
+            start_screen_mic()
+        elif selection == RecordingOption.SCREEN_AND_SYS.value:
+            start_screen_system_audio()
+        elif selection == RecordingOption.SCREEN_ONLY.value:
+            start_screen_silent()
+        elif selection == RecordingOption.SCREENSHOT.value:
+            take_screenshot()
+        elif selection == RecordingOption.AUDIO_ONLY.value:
+            start_audio_only()
+
+    exit(0)

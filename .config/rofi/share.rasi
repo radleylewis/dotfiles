@@ -58,7 +58,8 @@ configuration {
     "window",
     "filebrowser",
     "profile:~/.config/rofi/scripts/performance-profile-menu",
-    "microphone:~/.config/rofi/scripts/microphone-menu"
+    "microphone:~/.config/rofi/scripts/microphone-menu",
+    "audio-visual-recorder-menu:~/.config/rofi/scripts/audio-visual-recorder-menu"
   ];
   show-icons: true;
   terminal: "alacritty";

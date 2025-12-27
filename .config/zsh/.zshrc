@@ -11,7 +11,6 @@ fi
 
 # history
 HISTSIZE=110000
-SAVEHIST=100000
 HISTFILE=~/.histfile
 
 export XDG_CONFIG_HOME="$HOME/.config"
@@ -26,8 +25,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
     export EDITOR=/opt/homebrew/bin/nvim
 elif [[ "$(uname)" == "Linux" ]]; then
     # Linux
-    export VISUAL=/usr/local/bin/nvim
-    export EDITOR=/usr/local/bin/nvim
+    export VISUAL=/usr/bin/nvim
+    export EDITOR=/usr/bin/nvim
 fi
 
 zmodload zsh/terminfo

@@ -35,7 +35,7 @@ configuration {
   }
 
   microphone {
-    display-name: "󰍬";
+    display-name: "🎤";
   }
 
   timeout {

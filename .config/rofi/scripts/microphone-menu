@@ -2,7 +2,7 @@
 
 import subprocess
 import os
-from typing import List
+from typing import List, Tuple
 
 mic_icon = "󰍬"
 yes_icon = ""
@@ -11,17 +11,11 @@ no_icon = ""
 CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 
 
-def _run_cmd(cmd: List[str]) -> str:
-    return subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
-
-
-def _notify(title: str, msg: str):
-    subprocess.run(["notify-send", title, msg])
-
-
 def _get_sources() -> List[str]:
     """Return all input devices (sources) with their human-readable names."""
-    output = _run_cmd(["pactl", "list", "sources"])
+    output = subprocess.run(
+        ["pactl", "list", "sources"], capture_output=True, text=True
+    ).stdout.strip()
 
     sources = []
     current = []
@@ -49,51 +43,51 @@ def _get_sources() -> List[str]:
     return result
 
 
-def _get_default_source() -> str:
+def _get_current_source() -> str:
     """Return the current default mic."""
-    return _run_cmd(["pactl", "get-default-source"])
-
-
-def mic_menu() -> str:
-    sources = _get_sources()
-    default = _get_default_source()
-
-    options: List[str] = []
-    mapping = {}
-
-    for name, desc in sources:
-        label = f"{mic_icon} {desc}"
-        if name == default:
-            label += "  (current)"
-        options.append(label)
-        mapping[label] = name
-
-    menu_input = "\n".join(options)
-
-    result = subprocess.run(
-        [
-            "rofi",
-            "-dmenu",
-            "-p",
-            "Select Microphone",
-            "-mesg",
-            f"Current: {default}",
-        ],
-        input=menu_input,
-        capture_output=True,
-        text=True,
+    return subprocess.run(
+        ["pactl", "get-default-source"], capture_output=True, text=True
     ).stdout.strip()
 
-    return mapping.get(result, "")
+
+def show_microphone_menu() -> None:
+    sources = _get_sources()
+    current = _get_current_source()
+
+    options: List[Tuple[str, str]] = []
+
+    for name, label in sources:
+        if name == current:
+            label = f"[current] {label}"
+        options.append((f"{mic_icon} {label}", name))
+
+    print("\0prompt\x1fMicrophone")
+    print(f"\0message\x1fCurrent Input: {current}")
+
+    for label, name in options:
+        print(f"{label}{chr(0)}info\x1f{name}|{label}")
 
 
-def main():
-    selected_source = mic_menu()
-
-    if selected_source:
-        subprocess.run(["pactl", "set-default-source", selected_source])
-        _notify("Microphone Changed", f"Now using:\n{selected_source}")
+def set_microphone(name: str, label) -> None:
+    subprocess.run(["pactl", "set-default-source", name])
+    subprocess.run(
+        [
+            "notify-send",
+            "󰍬 Microphone Changed",
+            f"Now using: {label}",
+            "--expire-time=3000",
+            "-u",
+            "normal",
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    if selection := os.environ.get("ROFI_INFO"):
+        name, label = selection.split("|")
+        set_microphone(name, label)
+    else:
+        show_microphone_menu()

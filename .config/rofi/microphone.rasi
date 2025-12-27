@@ -1,4 +1,14 @@
+@import       "theme"
+
 configuration {
-  show-icons: true;
+  show-icons: false;
 }
 
+mainbox {
+  children: [inputbar, listview];
+}
+
+element-icon {
+  padding: 5px 5px;
+  size: 4px;
+}

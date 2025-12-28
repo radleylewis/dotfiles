@@ -14,12 +14,17 @@
   background-color: @bg;
   text-color: @fg;
 }
-
 configuration {
   font: "JetBrains Mono Nerd Font 12";
+  terminal: "alacritty";
+  run-command: "{terminal} -e {cmd}";
+
+  combi {
+    display-name: "󰍜";
+  }
 
   drun {
-    display-name: "";
+    display-name: "󱓞";
   }
 
   run {
@@ -30,12 +35,8 @@ configuration {
     display-name: "";
   }
 
-  wifi {
-    display-name: "󰖩";
-  }
-
   microphone {
-    display-name: "🎤";
+    display-name: "󰍬";
   }
 
   timeout {
@@ -44,7 +45,7 @@ configuration {
   }
 
   filebrowser {
-    display-name: "📂";
+    display-name: "";
   }
 
   display-drun: "Application:";
@@ -54,12 +55,13 @@ configuration {
   sort: true;
   sorting-method: "fzf";
   modi: [
+    "run",
     "drun",
     "window",
     "filebrowser",
-    "profile:~/.config/rofi/scripts/performance-profile-menu",
-    "microphone:~/.config/rofi/scripts/microphone-menu",
-    "audio-visual-recorder-menu:~/.config/rofi/scripts/audio-visual-recorder-menu"
+    "microphone",
+    "performance-profile",
+    "av-recorder"
   ];
   show-icons: true;
   terminal: "alacritty";

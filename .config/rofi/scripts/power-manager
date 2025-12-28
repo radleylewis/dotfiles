@@ -83,7 +83,10 @@ def power():
         logout_icon: ["pkill", "-KILL", "-u", os.environ["USER"]],
     }
 
-    if action := action_map[selected]:
+    if selected == lock_icon:
+        subprocess.run(action_map[lock_icon])
+
+    elif action := action_map[selected]:
         if confirm():
             subprocess.run(action)
 

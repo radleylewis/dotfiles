@@ -1,0 +1,287 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+from typing import List, Optional, Union, Literal
+from dataclasses import dataclass
+
+from utils import notify
+
+
+search = "󰍉"
+shut_lock = ""
+open_lock = ""
+wifi_enable = "󰖩"
+wifi_disable = "󰖪"
+wifi_known = "󰆓"
+connect_icon = ""
+forget_icon = "󰩹"
+back_icon = "󰁍"
+new_icon = "󰐕"
+
+CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+NOTIFY_TITLE = f"{wifi_enable}  WiFi Manager"
+TOGGLE_WIFI = "TOGGLE_WIFI"
+BACK = "BACK"
+CONNECT = "CONNECT"
+FORGET = "FORGET"
+
+
+@dataclass(slots=True)
+class WifiNetwork:
+    ssid: str
+    security: Optional[str]
+    saved: bool
+    visible: bool
+
+
+ToggleType = Literal[TOGGLE_WIFI]
+
+
+def get_saved_networks() -> List[str]:
+    """return a list of saved wifi networks"""
+    saved_connections = subprocess.run(
+        ["nmcli", "-t", "-f", "NAME,TYPE", "connection", "show"],
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    saved_networks = []
+    for connection in saved_connections:
+        if connection.endswith("wireless"):
+            saved_networks.append(connection.split(":")[0])
+
+    return saved_networks
+
+
+def list_wifi_networks() -> dict[str, WifiNetwork]:
+
+    saved_networks = get_saved_networks()
+
+    visible_networks = subprocess.run(
+        ["nmcli", "-t", "-f", "SECURITY,SSID", "device", "wifi", "list"],
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    networks: dict[str, WifiNetwork] = {}
+
+    for network in visible_networks:
+        security, ssid = network.split(":", 1)
+        if ssid:
+            saved = ssid in saved_networks
+            networks[ssid] = WifiNetwork(
+                ssid=ssid, security=security, saved=saved, visible=True
+            )
+    return networks
+
+
+def is_wifi_enabled() -> bool:
+    result = subprocess.run(
+        ["nmcli", "-fields", "WIFI", "g"],
+        capture_output=True,
+        text=True,
+    )
+    return "enabled" in result.stdout
+
+
+def show_wifi_networks():
+
+    notify(
+        title=NOTIFY_TITLE,
+        message="Getting list of available WiFi networks",
+        expire_time=2_000,
+    )
+
+    wifi_enabled = is_wifi_enabled()
+    wifi_networks: dict[str, WifiNetwork] = {}
+
+    if wifi_enabled:
+        toggle = f"{wifi_disable}  Disable Wi-Fi"
+        wifi_networks = list_wifi_networks()
+        networks = sorted(
+            wifi_networks.values(), key=lambda network: (not network.saved)
+        )
+    else:
+        toggle = f"{wifi_enable}  Enable Wi-Fi"
+        networks = []
+
+    options: dict[str, Union[str, WifiNetwork]] = {toggle: TOGGLE_WIFI}
+    for network in networks:
+        label: str = ""
+        if network.saved:
+            label += wifi_known
+        elif network.security and network.security.startswith("WPA"):
+            label += shut_lock
+        else:
+            label += open_lock
+        label += f"  {network.ssid}"
+        options[label] = network
+
+    result = subprocess.run(
+        [
+            "rofi",
+            "-dmenu",
+            "-i",
+            "-selected-row",
+            "1",
+            "-p",
+            f" {wifi_enable} Search Network:",
+            "-theme",
+            f"{CONFIG_DIR}/rofi/wifi.rasi",
+        ],
+        input="\n".join(options.keys()),
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+
+    return options[result], wifi_networks
+
+
+def toggle_wifi() -> None:
+    if is_wifi_enabled():
+        subprocess.run(["nmcli", "radio", "wifi", "off"])
+        notify(title=NOTIFY_TITLE, message="Disabling Wi-Fi")
+    else:
+        subprocess.run(["nmcli", "radio", "wifi", "on"])
+        notify(title=NOTIFY_TITLE, message="Enabling Wi-Fi")
+
+
+def connect_existing_network(network: WifiNetwork) -> None:
+    result = subprocess.run(
+        ["nmcli", "connection", "up", "id", network.ssid],
+        capture_output=True,
+        text=True,
+    ).stdout
+    if "successfully" in result:
+        message = f"Connecting to Wi-Fi network: {network.ssid}"
+        notify(
+            title=NOTIFY_TITLE,
+            message=message,
+            expire_time=3_000,
+            urgency="low",
+        )
+
+
+def prompt_for_password(ssid: str) -> str:
+    password = subprocess.run(
+        [
+            "rofi",
+            "-dmenu",
+            "-password",
+            "-p",
+            f"{shut_lock} Enter Password for {ssid}:",
+            "-theme",
+            f"{CONFIG_DIR}/rofi/password.rasi",
+        ],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return password
+
+
+def connect_new_network(network: WifiNetwork) -> None:
+    requires_password = network.security and network.security.startswith("WPA")
+
+    cmd = ["nmcli", "device", "wifi", "connect", network.ssid]
+
+    if requires_password:
+        pwd = prompt_for_password(network.ssid)
+        cmd += ["password", pwd]
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+    if "successfully" in result.lower():
+        message = f"Connecting to new Wi-Fi network: {network.ssid}"
+        notify(
+            title=NOTIFY_TITLE,
+            message=message,
+            expire_time=3_000,
+            urgency="low",
+        )
+
+
+def forget_network(network: WifiNetwork) -> None:
+    result = subprocess.run(
+        [
+            "nmcli",
+            "connection",
+            "delete",
+            "id",
+            network.ssid,
+        ],
+        capture_output=True,
+        text=True,
+    ).stdout.lower()
+    if "successfully" in result:
+        message = f"Removed Wi-Fi network: {network.ssid}"
+        notify(
+            title=NOTIFY_TITLE,
+            message=message,
+            expire_time=3_000,
+            urgency="low",
+        )
+
+
+def show_selected_network(
+    selected_network: WifiNetwork, networks: dict[str, WifiNetwork]
+):
+
+    if network := networks[selected_network.ssid]:
+        title = f"{wifi_enable} {network.ssid}"
+
+        connect_label = f"{connect_icon} {CONNECT}"
+        forget_label = f"{forget_icon} {FORGET}"
+        back_label = f"{back_icon} {BACK}"
+
+        if network.saved:
+            title += f" [{wifi_known} existing network]"
+            options = [connect_label, forget_label, back_label]
+        else:
+            title += f" [{new_icon} new network]"
+            options = [connect_label, back_label]
+
+        action = (
+            subprocess.run(
+                [
+                    "rofi",
+                    "-dmenu",
+                    "-i",
+                    "-selected-row",
+                    "2",
+                    "-p",
+                    f"{title}",
+                    "-theme",
+                    f"{CONFIG_DIR}/rofi/wifi.rasi",
+                ],
+                input="\n".join(options),
+                text=True,
+                capture_output=True,
+            ).stdout.strip()
+        ).split(" ")[1]
+
+        if action == BACK:
+            main()
+        elif action == CONNECT:
+            if selected_network.saved:
+                connect_existing_network(selected_network)
+            else:
+                connect_new_network(selected_network)
+        elif action == FORGET:
+            forget_network(selected_network)
+
+
+def main() -> None:
+    selection, networks = show_wifi_networks()
+    if selection == TOGGLE_WIFI:
+        toggle_wifi()
+    elif isinstance(selection, WifiNetwork):
+        show_selected_network(selection, networks)
+
+
+if __name__ == "__main__":
+    main()

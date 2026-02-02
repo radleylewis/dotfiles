@@ -2,7 +2,7 @@
 
 import subprocess
 import os
-from typing import List, Optional, Union, Literal
+from typing import List, Optional, Literal
 from dataclasses import dataclass
 
 from utils import notify
@@ -86,7 +86,6 @@ def is_wifi_enabled() -> bool:
 
 
 def show_wifi_networks():
-
     notify(
         title=NOTIFY_TITLE,
         message="Getting list of available WiFi networks",
@@ -96,27 +95,38 @@ def show_wifi_networks():
     wifi_enabled = is_wifi_enabled()
     wifi_networks: dict[str, WifiNetwork] = {}
 
+    options: dict[str, str] = {}
+
     if wifi_enabled:
-        toggle = f"{wifi_disable}  Disable Wi-Fi"
+        toggle_label = f"{wifi_disable}  Disable Wi-Fi"
+        options[toggle_label] = TOGGLE_WIFI
+
         wifi_networks = list_wifi_networks()
         networks = sorted(
-            wifi_networks.values(), key=lambda network: (not network.saved)
+            wifi_networks.values(),
+            key=lambda network: (not network.saved),
         )
     else:
-        toggle = f"{wifi_enable}  Enable Wi-Fi"
+        toggle_label = f"{wifi_enable}  Enable Wi-Fi"
+        options[toggle_label] = TOGGLE_WIFI
         networks = []
 
-    options: dict[str, Union[str, WifiNetwork]] = {toggle: TOGGLE_WIFI}
     for network in networks:
-        label: str = ""
+        label = ""
+
         if network.saved:
             label += wifi_known
         elif network.security and network.security.startswith("WPA"):
             label += shut_lock
         else:
             label += open_lock
-        label += f"  {network.ssid}"
-        options[label] = network
+
+        # IMPORTANT: strip only for display
+        ssid_display = network.ssid.rstrip()
+        label += f"  {ssid_display}"
+
+        # map label -> real ssid
+        options[label] = network.ssid
 
     result = subprocess.run(
         [
@@ -126,16 +136,26 @@ def show_wifi_networks():
             "-selected-row",
             "1",
             "-p",
-            f" {wifi_enable} Search Network:",
+            f" {wifi_enable}",
             "-theme",
             f"{CONFIG_DIR}/rofi/wifi.rasi",
         ],
         input="\n".join(options.keys()),
         text=True,
         capture_output=True,
-    ).stdout.strip()
+    ).stdout.rstrip("\n")
 
-    return options[result], wifi_networks
+    if not result:
+        return None, wifi_networks
+
+    selection = options[result]
+
+    # Toggle selected
+    if selection == TOGGLE_WIFI:
+        return TOGGLE_WIFI, wifi_networks
+
+    # Network selected → return actual WifiNetwork object
+    return wifi_networks[selection], wifi_networks
 
 
 def toggle_wifi() -> None:
@@ -232,7 +252,7 @@ def show_selected_network(
 ):
 
     if network := networks[selected_network.ssid]:
-        title = f"{wifi_enable} {network.ssid}"
+        title = f" {wifi_enable}  {network.ssid}"
 
         connect_label = f"{connect_icon} {CONNECT}"
         forget_label = f"{forget_icon} {FORGET}"
@@ -251,8 +271,6 @@ def show_selected_network(
                     "rofi",
                     "-dmenu",
                     "-i",
-                    "-selected-row",
-                    "2",
                     "-p",
                     f"{title}",
                     "-theme",
@@ -265,7 +283,7 @@ def show_selected_network(
         ).split(" ")[1]
 
         if action == BACK:
-            main()
+            wifi_manager()
         elif action == CONNECT:
             if selected_network.saved:
                 connect_existing_network(selected_network)
@@ -273,9 +291,10 @@ def show_selected_network(
                 connect_new_network(selected_network)
         elif action == FORGET:
             forget_network(selected_network)
+            wifi_manager()
 
 
-def main() -> None:
+def wifi_manager() -> None:
     selection, networks = show_wifi_networks()
     if selection == TOGGLE_WIFI:
         toggle_wifi()
@@ -284,4 +303,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    wifi_manager()

@@ -1,15 +1,18 @@
 # rad's aliases
 
-# General Aliases
-alias grep="grep --color=auto"
+alias grep="rg --color=auto"
 alias diff="diff --color=auto"
 alias rm="rm -ri"
 alias mv="mv -i"
 alias vim="nvim"
-alias	ls="ls -lah --color=auto"
 alias df='df -h'
 alias free='free -m'
 alias kchrome="ps -e | rg chrom | awk '{print $1}' | xargs kill -9"
+alias ls="eza --icons"
+alias ll="eza -lh --icons --git"
+alias la="eza -lah --icons --git"
+alias cat="bat"
+alias -- -='cd -'
 
 # Git Aliases
 alias gpush="git push"
@@ -25,9 +28,5 @@ alias tkill="tmux kill-session -t"
 alias tlist="tmux list-sessions"
 alias tattach="tmux attach"
 
-# dotfiles
-alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
-
-# AWS
-alias stop:lightsail="aws lightsail stop-instance --region ap-northeast-1 --instance-name dcconnect_rad"
-alias start:lightsail="aws lightsail start-instance --region ap-northeast-1 --instance-name dcconnect_rad"
+# stream from camera
+alias stream='mpv av://v4l2:/dev/video4 --fullscreen --demuxer-lavf-o=input_format=mjpeg,framerate=30 --profile=low-latency --untimed'

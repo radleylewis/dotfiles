@@ -1,1 +1,13 @@
 set hidden true
+set preview true
+
+cmd edit ${{
+  nvim "$f"
+}}
+
+cmd edit-multi ${{
+  nvim $fx
+}}
+
+map e edit
+map E edit-multi

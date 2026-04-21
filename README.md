@@ -4,16 +4,16 @@
 
 These are my dotfiles for use on arch and ubuntu based linux distributions. My setup includes:
 
--   qtile ([submodule](https://github.com/radleylewis/qtile))  
--   neovim ([submodule](https://github.com/radleylewis/nvim))  
--   tmux
--   alacritty
--   zsh
--   rofi
--   lf
--   brave
+- qtile ([submodule](https://github.com/radleylewis/qtile))
+- neovim ([submodule](https://github.com/radleylewis/nvim))
+- tmux
+- kitty
+- zsh
+- rofi
+- lf
+- brave
 
-Feel free to use any of the configurations herein as inspiration.
+Feel free to use any of the configurations herein for inspiration.
 
 ## setup
 
@@ -22,6 +22,7 @@ Feel free to use any of the configurations herein as inspiration.
 ```bash
 cd ~
 ```
+
 ```bash
 git clone --bare git@github.com:radleylewis/dotfiles.git .dotfiles
 ```
@@ -31,20 +32,31 @@ git clone --bare git@github.com:radleylewis/dotfiles.git .dotfiles
 ```bash
 echo alias dotfiles=\'git --git-dir='$HOME'/.dotfiles --work-tree='$HOME'\' >> .bashrc
 ```
+
 ```bash
 source ~/.bashrc
 ```
+
+Don't track files noting $HOME work-tree.
+
 ```bash
-dotfiles config status.showUntrackedFiles no # don't track files noting $HOME work-tree
+dotfiles config status.showUntrackedFiles no
 ```
+
+Populate dotfiles to their respective locations.
+
 ```bash
-dotfiles checkout # populates dotfiles to their respective locations
+dotfiles checkout
 ```
+
 ```bash
 cd ~/.config/nvim
 ```
+
+Clone the submodule nvim which may not happen automatically.
+
 ```bash
-dotfiles submodule update # clones the submodule nvim which may not happen automatically
+dotfiles submodule update
 ```
 
 ## usage

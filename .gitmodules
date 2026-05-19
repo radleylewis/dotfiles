@@ -7,3 +7,6 @@
 [submodule ".config/qtile"]
 	path = .config/qtile
 	url = git@github.com:radleylewis/qtile.git
+[submodule "/home/rad/.config/zsh"]
+	path = /home/rad/.config/zsh
+	url = git@github.com:radleylewis/zsh.git

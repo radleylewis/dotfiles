@@ -1,12 +1,9 @@
 [submodule ".config/nvim"]
 	path = .config/nvim
 	url = git@github.com:radleylewis/nvim.git
-[submodule ".config/alacritty/themes"]
-	path = .config/alacritty/themes
-	url = https://github.com/alacritty/alacritty-theme.git
 [submodule ".config/qtile"]
 	path = .config/qtile
 	url = git@github.com:radleylewis/qtile.git
-[submodule "/home/rad/.config/zsh"]
-	path = /home/rad/.config/zsh
+[submodule ".config/zsh"]
+	path = .config/zsh
 	url = git@github.com:radleylewis/zsh.git

@@ -1,0 +1,25 @@
+[env]
+TERM = "xterm-256color"
+
+[font]
+size = 14
+
+[font.normal]
+family = "FiraCode Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "FiraCode Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "FiraCode Nerd Font"
+style = "Italic"
+
+[font.bold_italic]
+family = "FiraCode Nerd Font"
+style = "Bold Italic"
+
+[window]
+decorations = "full"
+opacity = 0.7

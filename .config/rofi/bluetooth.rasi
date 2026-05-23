@@ -1,6 +1,0 @@
-@import "theme"
-
-element-icon {
-  padding: 10px 0px;
-  size: 20px;
-}

@@ -7,14 +7,13 @@ from dataclasses import dataclass
 
 from utils import notify
 
-
 search = "󰍉"
 shut_lock = ""
 open_lock = ""
 wifi_enable = "󰖩"
 wifi_disable = "󰖪"
 wifi_known = "󰆓"
-connect_icon = ""
+connect_icon = "󱘖"
 forget_icon = "󰩹"
 back_icon = "󰁍"
 new_icon = "󰐕"

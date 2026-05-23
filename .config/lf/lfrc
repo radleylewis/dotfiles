@@ -1,13 +1,98 @@
-set hidden true
-set preview true
+# ─────────────────────────────────────────────
+#  Basic settings
+# ─────────────────────────────────────────────
 
-cmd edit ${{
-  nvim "$f"
+set shell sh
+set shellopts '-eu'
+set ifs "\n"
+set scrolloff 10
+set icons true
+set period 1
+set hidden
+
+# ─────────────────────────────────────────────
+#  Preview
+# ─────────────────────────────────────────────
+
+set previewer ctpv
+set cleaner ctpvclear
+&ctpv -s $id
+
+cmd on-quit &ctpvquit $id
+
+# ─────────────────────────────────────────────
+#  Commands
+# ─────────────────────────────────────────────
+
+cmd open &{{
+    case $(file --mime-type -Lb $f) in
+        text/*) lf -remote "send $id \$nvim $f";;
+        image/*) imv $f;;
+        audio/*) mpv $f;;
+        video/*) mpv $f;;
+        application/pdf) zathura $f;;
+        *) xdg-open $f;;
+    esac
 }}
 
-cmd edit-multi ${{
-  nvim $fx
+cmd trash %trash-put $fx
+
+cmd extract %{{
+    case $f in
+        *.zip) unzip $f;;
+        *.tar.gz) tar xzf $f;;
+        *.tar.bz2) tar xjf $f;;
+        *.tar.xz) tar xJf $f;;
+        *.rar) unrar x $f;;
+        *.7z) 7z x $f;;
+    esac
 }}
 
-map e edit
-map E edit-multi
+cmd copyto %{{
+    dest=$(find ~ -type d | fzf)
+    [ -n "$dest" ] && cp -r $fx "$dest"
+}}
+
+cmd moveto %{{
+    dest=$(find ~ -type d | fzf)
+    [ -n "$dest" ] && mv $fx "$dest"
+}}
+
+cmd mkdir %{{
+    printf "Directory name: "
+    read ans
+    mkdir -p "$ans"
+}}
+
+cmd mkfile %{{
+    printf "File name: "
+    read ans
+    touch "$ans"
+}}
+
+# ─────────────────────────────────────────────
+#  Keybindings
+# ─────────────────────────────────────────────
+
+# Clear conflicting defaults
+map d
+
+# File operations
+map D trash
+map <delete> trash
+map E extract
+map C copyto
+map M moveto
+map A mkdir
+map T mkfile
+
+# Navigation
+map g/ cd /
+map gh cd ~
+map gc cd ~/.config
+map gd cd ~/Downloads
+map gv cd ~/Videos
+map gp cd ~/Pictures
+
+# Open in nvim explicitly
+map V push :$nvim<space>

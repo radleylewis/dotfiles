@@ -21,6 +21,32 @@ def get_uptime() -> str:
     return result.stdout.strip().replace("up ", "")
 
 
+def get_init_system() -> str:
+    try:
+        result = subprocess.run(
+            ["ps", "--pid", "1", "-o", "comm="],
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def get_power_commands() -> dict:
+    init = get_init_system()
+    if init == "systemd":
+        return {
+            shutdown_icon: ["systemctl", "poweroff"],
+            reboot_icon: ["systemctl", "reboot"],
+        }
+    else:
+        return {
+            shutdown_icon: ["loginctl", "poweroff"],
+            reboot_icon: ["loginctl", "reboot"],
+        }
+
+
 def main_menu() -> str:
     options: List[str] = [
         lock_icon,
@@ -78,17 +104,16 @@ def power():
     action_map = {
         lock_icon: ["swaylock", "-i", LOCKSCREEN_WALLPAPER],
         sleep_icon: [os.path.expanduser("~/.config/qtile/scripts/sleep.sh")],
-        shutdown_icon: ["systemctl", "poweroff"],
-        reboot_icon: ["systemctl", "reboot"],
         logout_icon: ["pkill", "-KILL", "-u", os.environ["USER"]],
+        **get_power_commands(),
     }
 
     if selected == lock_icon:
         subprocess.run(action_map[lock_icon])
 
-    elif action := action_map[selected]:
+    elif selected in action_map:
         if confirm():
-            subprocess.run(action)
+            subprocess.run(action_map[selected])
 
 
 if __name__ == "__main__":

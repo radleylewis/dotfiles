@@ -14,12 +14,11 @@ config_dir = os.environ.get("XDG_CONFIG_HOME", "") + "/rofi"
 
 
 def get_current_profile() -> str:
-    result = subprocess.run(
+    return subprocess.run(
         ['powerprofilesctl', 'get'],
         capture_output=True,
         text=True,
-    )
-    return result.stdout.splitlines()[1].split()[-1]
+    ).stdout.strip()
 
 
 def performance_profile_menu() -> None:

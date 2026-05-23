@@ -15,11 +15,7 @@ config_dir = os.environ.get("XDG_CONFIG_HOME", "") + "/rofi"
 
 def get_current_profile() -> str:
     result = subprocess.run(
-        [
-            "asusctl",
-            "profile",
-            "-p",
-        ],
+        ['powerprofilesctl', 'get'],
         capture_output=True,
         text=True,
     )
@@ -28,9 +24,9 @@ def get_current_profile() -> str:
 
 def performance_profile_menu() -> None:
     opts = [
-        ["Performance", performance_icon],
-        ["Balanced", balanced_icon],
-        ["Quiet", quiet_icon],
+        ["performance", performance_icon],
+        ["balanced", balanced_icon],
+        ["saver", quiet_icon],
     ]
 
     current_profile = get_current_profile()
@@ -43,7 +39,7 @@ def performance_profile_menu() -> None:
 
 def set_performance_profile(profile: str) -> None:
     subprocess.run(
-        ["asusctl", "profile", "-P", profile],
+        ["powerprofilesctl", "set", profile],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,

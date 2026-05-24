@@ -8,10 +8,11 @@ These are my dotfiles for use on arch and ubuntu based linux distributions. My s
 - neovim ([submodule](https://github.com/radleylewis/nvim))
 - zsh ([submodule](https://github.com/radleylewis/zsh))
 - tmux
-- kitty
+- alacritty
 - rofi
 - lf
 - brave
+- mako
 
 Feel free to use any of the configurations herein for inspiration.
 

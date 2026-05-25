@@ -6,7 +6,7 @@
 		tmux list-windows -t "$session" -F 'WINDOW:#S:#I #W'
 	done
 } | sed 's/^SESSION:/▼ /' | sed 's/^WINDOW:/  ⦿ /' |
-	fzf --reverse |
+	fzf --reverse --no-border |
 	awk '{
   if ($1 == "▼") {
     print $2
@@ -15,4 +15,3 @@
   }
 }' |
 	xargs tmux switch-client -t
-

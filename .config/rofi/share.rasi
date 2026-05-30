@@ -5,7 +5,7 @@
   spacing: 0;
 
   urgent: #ffa07a;
-  active: #ff6b8a;
+  active: #00bfff;
   bg: #1a1426;
   bg-alt: #2d2438;
   fg: #9d8ba8;

@@ -47,14 +47,18 @@ def take_region_screenshot():
     IMAGE_DIR = os.path.expanduser("~/Pictures/Screenshots")
     os.makedirs(IMAGE_DIR, exist_ok=True)
     out = timestamp_file("screenshot", "png", IMAGE_DIR)
-    try:
-        region = subprocess.run(
-            ["slurp"], capture_output=True, text=True, check=True
-        ).stdout.strip()
-        subprocess.Popen(["grim", "-g", region, out])
-        notify("Screenshot Taken", out)
-    except subprocess.CalledProcessError:
-        pass  # user cancelled slurp
+    script = (
+        "sleep 0.3 && "
+        "region=$(slurp) && "
+        f"grim -g \"$region\" {out} && "
+        f"notify-send 'Screenshot Taken' {out}"
+    )
+    subprocess.Popen(
+        ["bash", "-c", script],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def get_recording_info():

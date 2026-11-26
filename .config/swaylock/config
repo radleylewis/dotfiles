@@ -1,0 +1,37 @@
+# Lock screen styled with the qtile palette (~/.config/qtile/assets/constants.py).
+# Colours are rrggbb[aa]. The wallpaper is passed with -i by the callers.
+font=JetBrainsMono Nerd Font
+indicator-radius=90
+indicator-thickness=8
+show-failed-attempts
+ignore-empty-password
+indicator-caps-lock
+
+# idle / typing: cyan ring, green keypresses, pink backspace
+inside-color=1b1e37cc
+ring-color=00bfff
+key-hl-color=7ee787
+bs-hl-color=f6719b
+text-color=e1e1e2
+line-uses-inside
+separator-color=00000000
+
+# verifying: purple
+inside-ver-color=1b1e37cc
+ring-ver-color=c792ea
+text-ver-color=c792ea
+
+# wrong password: pink/red
+inside-wrong-color=030b1ecc
+ring-wrong-color=f6719b
+text-wrong-color=f6719b
+
+# cleared: gold
+inside-clear-color=1b1e37cc
+ring-clear-color=e2c779
+text-clear-color=e2c779
+
+# caps lock: gold ring
+inside-caps-lock-color=1b1e37cc
+ring-caps-lock-color=e2c779
+text-caps-lock-color=e2c779

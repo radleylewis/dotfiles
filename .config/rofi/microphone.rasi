@@ -7,8 +7,3 @@ configuration {
 mainbox {
   children: [inputbar, listview];
 }
-
-element-icon {
-  padding: 5px 5px;
-  size: 4px;
-}

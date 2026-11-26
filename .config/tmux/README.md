@@ -8,21 +8,23 @@ A tmux configuration with vim keybindings, session management, and popup utiliti
 
 - tmux `3.3` or later
 - [TPM](https://github.com/tmux-plugins/tpm) (tmux plugin manager)
+- `fzf` (for the session and SSH popups)
 - `lazygit` (for the lazygit popup)
-- A [Nerd Font](https://www.nerdfonts.com/) (FiraCode Nerd Font recommended)
+- `wl-clipboard` (tmux-yank copies with `wl-copy` on Wayland)
+- A [Nerd Font](https://www.nerdfonts.com/) (JetBrains Mono Nerd Font, as in the rest of the setup)
 
 ## Installation
 
 i. Clone this config:
 
 ```bash
-mkdir -p ~/.config/tmux && curl -fsSL https://raw.githubusercontent.com/radleylewis/dotfiles/main/tmux/tmux.conf -o ~/.config/tmux/tmux.conf
+mkdir -p ~/.config/tmux && curl -fsSL https://raw.githubusercontent.com/radleylewis/dotfiles/master/.config/tmux/tmux.conf -o ~/.config/tmux/tmux.conf
 ```
 
 ii. Install TPM:
 
 ```bash
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
 ```
 
 iii. Start tmux and install plugins with `prefix + I` (capital i).
@@ -54,6 +56,9 @@ iii. Start tmux and install plugins with `prefix + I` (capital i).
 | Shortcut | Action |
 |----------|--------|
 | `prefix + c` | New window (in current path) |
+| `prefix + Space` | Switch to last window |
+| `prefix + b` | Break pane into its own window |
+| `prefix + x` | Kill pane (no confirmation) |
 
 ### Copy Mode
 
@@ -70,6 +75,9 @@ iii. Start tmux and install plugins with `prefix + I` (capital i).
 | `prefix + w` | Session switcher |
 | `prefix + T` | Scratchpad terminal |
 | `prefix + g` | LazyGit |
+| `prefix + S` | SSH to a host from `~/.ssh/config` (new window) |
+
+Inside the scratchpad (it has no prefix): `T` closes it, `C-[` enters copy mode.
 
 ### General
 

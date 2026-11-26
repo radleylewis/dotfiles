@@ -12,8 +12,8 @@ logout_icon = "󰗽"
 yes_icon = ""
 no_icon = ""
 
-CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "")
-LOCKSCREEN_WALLPAPER = f"{CONFIG_DIR}/qtile/assets/wallpapers/lock_screen.png"
+CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+LOCKSCREEN_WALLPAPER = f"{CONFIG_DIR}/qtile/assets/wallpapers/lock_screen.jpg"
 
 
 def get_uptime() -> str:
@@ -103,8 +103,17 @@ def power():
 
     action_map = {
         lock_icon: ["swaylock", "-i", LOCKSCREEN_WALLPAPER],
-        sleep_icon: [os.path.expanduser("~/.config/qtile/scripts/sleep.sh")],
-        logout_icon: ["pkill", "-KILL", "-u", os.environ["USER"]],
+        # Lock first (-f returns once locked), then suspend immediately. Use loginctl
+        # (not zzz) so elogind's SuspendState=freeze (s2idle) applies; S3 won't resume.
+        sleep_icon: [
+            "sh",
+            "-c",
+            'swaylock -f -i "$1" && loginctl suspend',
+            "sh",
+            LOCKSCREEN_WALLPAPER,
+        ],
+        # End the qtile session cleanly instead of SIGKILLing every user process.
+        logout_icon: ["qtile", "cmd-obj", "-o", "cmd", "-f", "shutdown"],
         **get_power_commands(),
     }
 

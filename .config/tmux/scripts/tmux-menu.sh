@@ -14,4 +14,4 @@
     print $2
   }
 }' |
-	xargs tmux switch-client -t
+	xargs -r tmux switch-client -t

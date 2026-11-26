@@ -1,27 +1,50 @@
+# colours mirror the qtile palette in ~/.config/qtile/assets/constants.py
 font=JetBrainsMono Nerd Font 11
 background-color=#1b1e37
 text-color=#e1e1e2
-border-color=#0d0f1a
+# default accent: qtile's highlight cyan
+border-color=#00BFFF
 border-radius=0
-border-size=2
+border-size=3
 padding=12
 width=350
 height=150
 margin=50,10,10,10
 default-timeout=3000
 icons=1
-icon-path=/usr/share/icons/Papirus-Dark/16x16
+icon-path=/usr/share/icons/Papirus-Dark
 anchor=top-right
 markup=1
-
-[urgency=low]
-border-color=#0d0f1a
-
-[urgency=normal]
-border-color=#0d0f1a
+format=<span color="#00BFFF"><b>%s</b></span>\n%b
 
 [urgency=critical]
-border-color=#ff6b8a
-text-color=#ff6b8a
+border-color=#f6719b
 background-color=#030b1e
+format=<span color="#f6719b"><b>%s</b></span>\n%b
+# stay until dismissed (e.g. "Microphone Live", low battery)
+# (no layer=overlay: a notification replaced across layers leaves a stale copy drawn)
 default-timeout=0
+
+# Volume: green, red above 100% (sent as critical), gold when muted
+[summary="Volume"]
+border-color=#7ee787
+format=<span color="#7ee787"><b>%s</b></span>\n%b
+default-timeout=3000
+
+[summary="Volume" urgency=critical]
+border-color=#f6719b
+format=<span color="#f6719b"><b>%s</b></span>\n%b
+
+[summary="Volume" body~="Muted"]
+border-color=#e2c779
+format=<span color="#e2c779"><b>%s</b></span>\n%b
+
+# Brightness: purple
+[app-name="brightness-control"]
+border-color=#c792ea
+format=<span color="#c792ea"><b>%s</b></span>\n%b
+
+# Microphone: gold when muted (live is critical, so red)
+[summary="Microphone" urgency=normal]
+border-color=#e2c779
+format=<span color="#e2c779"><b>%s</b></span>\n%b

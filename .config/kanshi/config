@@ -1,21 +1,53 @@
-profile laptop-only {
+# kanshi applies the first profile whose outputs all match.
+# With an external monitor connected, only the external is used.
+# Each profile also moves sound to match (monitor speakers when docked, laptop otherwise).
+
+# ── Laptop only ──────────────────────────────────────────────────────
+
+# ThinkPad T480 (1920x1080@60Hz panel), matched by panel ID so it wins here
+profile t480 {
+    output "Chimei Innolux Corporation 0x14F3 *" {
+        enable
+        mode 1920x1080@60Hz
+        scale 1
+        position 0,0
+    }
+    exec $HOME/.config/rofi/scripts/audio-output --switch analog
+}
+
+# Other laptop (2560x1440@120Hz panel at 1.5x)
+profile laptop {
     output eDP-1 {
         enable
         mode 2560x1440@120Hz
         scale 1.5
         position 0,0
     }
+    exec $HOME/.config/rofi/scripts/audio-output --switch analog
 }
 
-profile docked-external-only {
-    output DP-2 {
+# ── External monitor connected: external only, laptop panel off ─────
+
+# The 1440p 144Hz monitor
+profile docked {
+    output eDP-1 disable
+    output * {
         enable
         mode 2560x1440@144Hz
-        scale 1.0
+        scale 1
         position 0,0
     }
+    exec $HOME/.config/rofi/scripts/audio-output --switch hdmi
+}
 
-    output eDP-1 {
-        disable
+# Any other monitor, at its preferred mode
+profile docked-any {
+    output eDP-1 disable
+    output * {
+        enable
+        mode preferred
+        scale 1
+        position 0,0
     }
+    exec $HOME/.config/rofi/scripts/audio-output --switch hdmi
 }

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
-import subprocess
 import os
-from typing import List, Optional, Literal
+import re
+import subprocess
+import sys
+from typing import List, Optional
 from dataclasses import dataclass
 
-from utils import notify
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "lib"))
 
-search = "󰍉"
+from utils import ROFI_DIR, notify  # noqa: E402
+
 shut_lock = ""
 open_lock = ""
 wifi_enable = "󰖩"
@@ -18,7 +21,6 @@ forget_icon = "󰩹"
 back_icon = "󰁍"
 new_icon = "󰐕"
 
-CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 NOTIFY_TITLE = f"{wifi_enable}  WiFi Manager"
 TOGGLE_WIFI = "TOGGLE_WIFI"
 BACK = "BACK"
@@ -34,7 +36,27 @@ class WifiNetwork:
     visible: bool
 
 
-ToggleType = Literal[TOGGLE_WIFI]
+def _unescape(field: str) -> str:
+    """nmcli -t escapes ':' and '\\' inside fields with a backslash."""
+    return re.sub(r"\\(.)", r"\1", field)
+
+
+def _is_secured(security: Optional[str]) -> bool:
+    # Open networks show an empty SECURITY field (or "--")
+    return bool(security) and security != "--"
+
+
+def _notify_result(result: subprocess.CompletedProcess, success_message: str) -> None:
+    if result.returncode == 0:
+        notify(title=NOTIFY_TITLE, message=success_message, expire_time=3_000, urgency="low")
+    else:
+        error = (result.stderr or result.stdout).strip() or "unknown error"
+        notify(
+            title=NOTIFY_TITLE,
+            message=f"Failed: {error}",
+            expire_time=5_000,
+            urgency="critical",
+        )
 
 
 def get_saved_networks() -> List[str]:
@@ -48,7 +70,7 @@ def get_saved_networks() -> List[str]:
     saved_networks = []
     for connection in saved_connections:
         if connection.endswith("wireless"):
-            saved_networks.append(connection.split(":")[0])
+            saved_networks.append(_unescape(connection.rsplit(":", 1)[0]))
 
     return saved_networks
 
@@ -67,6 +89,7 @@ def list_wifi_networks() -> dict[str, WifiNetwork]:
 
     for network in visible_networks:
         security, ssid = network.split(":", 1)
+        ssid = _unescape(ssid)
         if ssid:
             saved = ssid in saved_networks
             networks[ssid] = WifiNetwork(
@@ -115,7 +138,7 @@ def show_wifi_networks():
 
         if network.saved:
             label += wifi_known
-        elif network.security and network.security.startswith("WPA"):
+        elif _is_secured(network.security):
             label += shut_lock
         else:
             label += open_lock
@@ -137,7 +160,7 @@ def show_wifi_networks():
             "-p",
             f" {wifi_enable}",
             "-theme",
-            f"{CONFIG_DIR}/rofi/wifi.rasi",
+            f"{ROFI_DIR}/wifi.rasi",
         ],
         input="\n".join(options.keys()),
         text=True,
@@ -147,7 +170,9 @@ def show_wifi_networks():
     if not result:
         return None, wifi_networks
 
-    selection = options[result]
+    selection = options.get(result)
+    if selection is None:  # free text typed that isn't in the list
+        return None, wifi_networks
 
     # Toggle selected
     if selection == TOGGLE_WIFI:
@@ -171,15 +196,8 @@ def connect_existing_network(network: WifiNetwork) -> None:
         ["nmcli", "connection", "up", "id", network.ssid],
         capture_output=True,
         text=True,
-    ).stdout
-    if "successfully" in result:
-        message = f"Connecting to Wi-Fi network: {network.ssid}"
-        notify(
-            title=NOTIFY_TITLE,
-            message=message,
-            expire_time=3_000,
-            urgency="low",
-        )
+    )
+    _notify_result(result, f"Connected to Wi-Fi network: {network.ssid}")
 
 
 def prompt_for_password(ssid: str) -> str:
@@ -191,7 +209,7 @@ def prompt_for_password(ssid: str) -> str:
             "-p",
             f"{shut_lock} Enter Password for {ssid}:",
             "-theme",
-            f"{CONFIG_DIR}/rofi/password.rasi",
+            f"{ROFI_DIR}/password.rasi",
         ],
         capture_output=True,
         text=True,
@@ -200,28 +218,20 @@ def prompt_for_password(ssid: str) -> str:
 
 
 def connect_new_network(network: WifiNetwork) -> None:
-    requires_password = network.security and network.security.startswith("WPA")
-
     cmd = ["nmcli", "device", "wifi", "connect", network.ssid]
 
-    if requires_password:
+    if _is_secured(network.security):
         pwd = prompt_for_password(network.ssid)
+        if not pwd:  # prompt cancelled
+            return
         cmd += ["password", pwd]
 
     result = subprocess.run(
         cmd,
         capture_output=True,
         text=True,
-    ).stdout
-
-    if "successfully" in result.lower():
-        message = f"Connecting to new Wi-Fi network: {network.ssid}"
-        notify(
-            title=NOTIFY_TITLE,
-            message=message,
-            expire_time=3_000,
-            urgency="low",
-        )
+    )
+    _notify_result(result, f"Connected to new Wi-Fi network: {network.ssid}")
 
 
 def forget_network(network: WifiNetwork) -> None:
@@ -235,22 +245,15 @@ def forget_network(network: WifiNetwork) -> None:
         ],
         capture_output=True,
         text=True,
-    ).stdout.lower()
-    if "successfully" in result:
-        message = f"Removed Wi-Fi network: {network.ssid}"
-        notify(
-            title=NOTIFY_TITLE,
-            message=message,
-            expire_time=3_000,
-            urgency="low",
-        )
+    )
+    _notify_result(result, f"Removed Wi-Fi network: {network.ssid}")
 
 
 def show_selected_network(
     selected_network: WifiNetwork, networks: dict[str, WifiNetwork]
 ):
 
-    if network := networks[selected_network.ssid]:
+    if network := networks.get(selected_network.ssid):
         title = f" {wifi_enable}  {network.ssid}"
 
         connect_label = f"{connect_icon} {CONNECT}"
@@ -264,22 +267,23 @@ def show_selected_network(
             title += f" [{new_icon} new network]"
             options = [connect_label, back_label]
 
-        action = (
-            subprocess.run(
-                [
-                    "rofi",
-                    "-dmenu",
-                    "-i",
-                    "-p",
-                    f"{title}",
-                    "-theme",
-                    f"{CONFIG_DIR}/rofi/wifi.rasi",
-                ],
-                input="\n".join(options),
-                text=True,
-                capture_output=True,
-            ).stdout.strip()
-        ).split(" ")[1]
+        choice = subprocess.run(
+            [
+                "rofi",
+                "-dmenu",
+                "-i",
+                "-p",
+                f"{title}",
+                "-theme",
+                f"{ROFI_DIR}/wifi.rasi",
+            ],
+            input="\n".join(options),
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
+        # Escape returns "" and typed text may have no icon prefix
+        parts = choice.split(" ", 1)
+        action = parts[1] if len(parts) == 2 else None
 
         if action == BACK:
             wifi_manager()

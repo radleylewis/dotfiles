@@ -68,7 +68,6 @@ configuration {
     "av-recorder"
   ];
   show-icons: true;
-  terminal: "alacritty";
 }
 
 window {
